@@ -8,9 +8,11 @@ import lombok.AllArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.IllegalFormatException;
 
 @Service
 @AllArgsConstructor
@@ -19,6 +21,7 @@ public class AuthService {
     private final UserRepository userRepository;
     private final AuthenticationManager authenticationManager;
     private final  JwtService jwtService;
+    private final PasswordEncoder passwordEncoder;
     public AuthenticationResponse login(LoginRequest loginRequest){
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword())
@@ -39,12 +42,12 @@ public class AuthService {
                 .firstName(registerRequest.getFirstName())
                 .lastName(registerRequest.getLastName())
                 .phone(registerRequest.getPhone())
-                .password(registerRequest.getPassword())
+                .password(passwordEncoder.encode(registerRequest.getPassword()))
                 .role(Role.ADMIN)
                 .build();
         userRepository.save(user);
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(registerRequest.getEmail(), registerRequest.getPassword())
+                new UsernamePasswordAuthenticationToken(registerRequest.getEmail(),registerRequest.getPassword())
         );
         String token = jwtService.generateToken(authentication);
         return AuthenticationResponse.builder()
