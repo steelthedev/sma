@@ -28,7 +28,10 @@ public class SecurityConfiguration{
         return httpSecurity
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth ->
-                        auth.requestMatchers(new AntPathRequestMatcher("/errors")).permitAll()
+                        auth
+                                .requestMatchers(new AntPathRequestMatcher("/errors")).permitAll()
+                                .requestMatchers(new AntPathRequestMatcher("/auth/login")).permitAll()
+                                .requestMatchers(new AntPathRequestMatcher("/auth/register")).permitAll()
                 )
                 .oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

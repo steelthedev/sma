@@ -1,6 +1,5 @@
 package dev.steelthedev.sma.auth;
 
-import dev.steelthedev.sma.user.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -15,7 +14,7 @@ public class AuthController {
     private final AuthService authService;
 
     @RequestMapping("/login")
-    public ResponseEntity<LoginResponse> auth(@RequestBody LoginRequest loginRequest){
+    public ResponseEntity<AuthenticationResponse> auth(@RequestBody LoginRequest loginRequest){
         return ResponseEntity.ok(authService.login(loginRequest));
     }
 
