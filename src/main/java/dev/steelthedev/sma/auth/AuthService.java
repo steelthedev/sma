@@ -27,9 +27,10 @@ public class AuthService {
                 new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword())
         );
         var user = userRepository.findByEmail(loginRequest.getEmail()).orElseThrow();
-        String token = jwtService.generateToken(authentication);
+        var tokens = jwtService.generateTokens(authentication);
         return AuthenticationResponse.builder()
-                .token(token)
+                .accessToken(tokens.getAccessToken())
+                .refreshToken(tokens.getRefreshToken())
                 .build();
     }
 
@@ -49,9 +50,10 @@ public class AuthService {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(registerRequest.getEmail(),registerRequest.getPassword())
         );
-        String token = jwtService.generateToken(authentication);
+        var tokens = jwtService.generateTokens(authentication);
         return AuthenticationResponse.builder()
-                .token(token)
+                .accessToken(tokens.getAccessToken())
+                .refreshToken(tokens.getRefreshToken())
                 .build();
 
 

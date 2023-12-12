@@ -1,5 +1,6 @@
 package dev.steelthedev.sma.config;
 
+import dev.steelthedev.sma.auth.TokenResponse;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -18,22 +19,33 @@ import java.util.stream.Collectors;
 public class JwtService {
     private final JwtEncoder jwtEncoder;
 
-    public String generateToken(Authentication authentication){
+    public TokenResponse generateTokens(Authentication authentication){
         Instant now = Instant.now();
 
         String scope = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(" "));
-        JwtClaimsSet claimsSet = JwtClaimsSet.builder()
+        JwtClaimsSet accessTokenClaimsSet = JwtClaimsSet.builder()
                 .issuer("self")
                 .issuedAt(now)
                 .expiresAt(now.plus(1, ChronoUnit.HOURS))
                 .claim("scope",scope)
                 .claim("email",authentication.getName())
-                .claim("roles",scope)
+                .build();
+        JwtClaimsSet refreshTokenClaimsSet = JwtClaimsSet.builder()
+                .issuer("self")
+                .issuedAt(now)
+                .expiresAt(now.plus(30, ChronoUnit.DAYS))
+                .claim("scope",scope)
+                .claim("email",authentication.getName())
                 .build();
 
-        return this.jwtEncoder.encode(JwtEncoderParameters.from(claimsSet)).getTokenValue();
+        String accessToken = this.jwtEncoder.encode(JwtEncoderParameters.from(accessTokenClaimsSet)).getTokenValue();
+        String refreshToken = this.jwtEncoder.encode(JwtEncoderParameters.from(refreshTokenClaimsSet)).getTokenValue();
+        return TokenResponse.builder()
+                .refreshToken(refreshToken)
+                .accessToken(accessToken)
+                .build();
 
     }
 }
