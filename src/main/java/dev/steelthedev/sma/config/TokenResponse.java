@@ -1,4 +1,4 @@
-package dev.steelthedev.sma.auth;
+package dev.steelthedev.sma.config;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -1,6 +1,7 @@
 package dev.steelthedev.sma.auth;
 
 import dev.steelthedev.sma.config.JwtService;
+import dev.steelthedev.sma.config.TokenResponse;
 import dev.steelthedev.sma.user.Role;
 import dev.steelthedev.sma.user.User;
 import dev.steelthedev.sma.user.UserRepository;
@@ -8,9 +9,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.stereotype.Service;
 
 
@@ -27,7 +26,7 @@ public class AuthService {
                 new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword())
         );
         var user = userRepository.findByEmail(loginRequest.getEmail()).orElseThrow();
-        var tokens = jwtService.generateTokens(authentication);
+        TokenResponse tokens = jwtService.generateTokens(authentication);
         return AuthenticationResponse.builder()
                 .accessToken(tokens.getAccessToken())
                 .refreshToken(tokens.getRefreshToken())
@@ -50,7 +49,7 @@ public class AuthService {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(registerRequest.getEmail(),registerRequest.getPassword())
         );
-        var tokens = jwtService.generateTokens(authentication);
+        TokenResponse tokens = jwtService.generateTokens(authentication);
         return AuthenticationResponse.builder()
                 .accessToken(tokens.getAccessToken())
                 .refreshToken(tokens.getRefreshToken())

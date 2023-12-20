@@ -1,16 +1,17 @@
 package dev.steelthedev.sma.config;
 
-import dev.steelthedev.sma.auth.TokenResponse;
+
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.oauth2.jwt.JwtClaimsSet;
-import org.springframework.security.oauth2.jwt.JwtEncoder;
-import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.oauth2.jwt.*;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Date;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -18,6 +19,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class JwtService {
     private final JwtEncoder jwtEncoder;
+    private final JwtDecoder jwtDecoder;
 
     public TokenResponse generateTokens(Authentication authentication){
         Instant now = Instant.now();
@@ -30,7 +32,7 @@ public class JwtService {
                 .issuedAt(now)
                 .expiresAt(now.plus(1, ChronoUnit.HOURS))
                 .claim("scope",scope)
-                .claim("email",authentication.getName())
+                .claim("subject",authentication.getName())
                 .build();
         JwtClaimsSet refreshTokenClaimsSet = JwtClaimsSet.builder()
                 .issuer("self")
@@ -47,5 +49,21 @@ public class JwtService {
                 .accessToken(accessToken)
                 .build();
 
+    }
+
+    public Map<String, Object> extractClaims(String jwt){
+        Jwt decodedJwt = jwtDecoder.decode(jwt);
+        return decodedJwt.getClaims();
+    }
+
+    public boolean isExpired(String jwt){
+        Instant expirationDate = (Instant) extractClaims(jwt).get("exp");
+        Date exp = Date.from(expirationDate);
+        return exp.before(new Date());
+    }
+
+    public  boolean isTokenValid(String token, UserDetails userDetails){
+        final String username =(String) extractClaims(token).get("subject");
+        return (username.equals(userDetails.getUsername()) && !isExpired(token));
     }
 }
